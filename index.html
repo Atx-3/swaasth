@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+    <title>Swasth</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .phone-outer-frame {
+            border: 12px solid black;
+            border-radius: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            background: #111;
+            padding: 2px;
+        }
+
+        .phone-container {
+            width: 414px;
+            height: 800px; 
+            background-color: #fff;
+            border-radius: 30px;
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: white;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            flex-direction: column;
+        }
+
+        .screen.active {
+            display: flex;
+            opacity: 1;
+            z-index: 1;
+        }
+        
+        #splash-screen.active {
+            z-index: 10;
+        }
+
+        /* Splash screen animation */
+        #splash-screen.fade-out {
+            animation: fadeOut 1s forwards;
+            animation-delay: 1.5s;
+        }
+
+        #splash-screen svg {
+            animation: fadeInZoom 1.5s ease-out;
+        }
+
+        @keyframes fadeInZoom {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; visibility: hidden; }
+        }
+        
+        @keyframes fadeInZoom-sm {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .animate-fadeInZoom-sm {
+            animation: fadeInZoom-sm 0.3s ease-out forwards;
+        }
+
+        /* Custom scrollbar hider */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .bottom-nav {
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+        }
+
+        #offline-banner {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: #ef4444;
+            color: white;
+            text-align: center;
+            padding: 8px;
+            z-index: 1000;
+            font-size: 0.875rem;
+        }
+        /* Typing indicator animation */
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background-color: #9ca3af;
+            border-radius: 50%;
+            display: inline-block;
+            animation: wave 1.3s infinite;
+        }
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.2s;
+        }
+        @keyframes wave {
+            0%, 60%, 100% {
+                transform: initial;
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="phone-outer-frame">
+        <div class="phone-container">
+            <div id="offline-banner">You are offline. Some features may not be available.</div>
+            <!-- Screen 1: Splash Screen -->
+            <div id="splash-screen" class="screen active flex justify-center items-center bg-green-50">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="w-48 h-48">
+                    <defs>
+                      <linearGradient id="logoGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#34D399" />
+                        <stop offset="100%" stop-color="#10B981" />
+                      </linearGradient>
+                    </defs>
+                    <path fill="#A7F3D0" d="M63.8,11.3C52.1,4.1,38.2,3.3,26,9.5c-3.5,1.7-6.7,3.9-9.5,6.6C4.2,28.4,0,45.8,6.8,60.8c5.4,12,16.5,20.9,29.3,23.7c15.2,3.4,30.9-1.5,41.6-12.2c12-12,16.4-29,11.3-44.5C85.4,20,76,14.5,63.8,11.3z"/>
+                    <path fill="url(#logoGradient)" d="M50,25 C52.761,25 55,27.239 55,30 L55,45 L70,45 C72.761,45 75,47.239 75,50 C75,52.761 72.761,55 70,55 L55,55 L55,70 C55,72.761 52.761,75 50,75 C47.239,75 45,72.761 45,70 L45,55 L30,55 C27.239,55 25,52.761 25,50 C25,47.239 27.239,45 30,45 L45,45 L45,30 C45,27.239 47.239,25 50,25 Z"/>
+                </svg>
+            </div>
+    
+            <!-- Screen 2: Language Selection -->
+            <div id="language-screen" class="screen p-8 flex flex-col justify-center">
+                <h1 class="text-2xl font-bold mb-2 text-center" data-lang-key="select_language_title">Select Your Language</h1>
+                <p class="text-gray-500 mb-8 text-center" data-lang-key="select_language_subtitle">Choose the language for your app experience.</p>
+                <div class="w-full space-y-3">
+                    <button onclick="selectLanguage('en')" class="w-full bg-green-500 text-white font-semibold py-3 rounded-xl shadow-md hover:bg-green-600 transition-colors">English</button>
+                    <button onclick="openLanguageModal()" class="w-full bg-gray-200 text-gray-800 font-semibold py-3 rounded-xl hover:bg-gray-300 transition-colors">Choose Another Language</button>
+                </div>
+            </div>
+    
+            <!-- Language Modal -->
+            <div id="language-modal" class="screen p-6 justify-center items-center bg-black bg-opacity-50">
+                <div class="bg-white rounded-2xl w-full max-w-sm m-auto flex flex-col animate-fadeInZoom-sm" style="max-height: 80%;">
+                    <h2 class="text-xl font-bold p-4 border-b">Select a Language</h2>
+                    <div class="overflow-y-auto p-4 space-y-2 no-scrollbar">
+                         <button onclick="selectLanguage('hi')" class="w-full text-left p-3 rounded-lg hover:bg-gray-100">हिन्दी (Hindi)</button>
+                         <button onclick="selectLanguage('bn')" class="w-full text-left p-3 rounded-lg hover:bg-gray-100">বাংলা (Bengali)</button>
+                         <button onclick="selectLanguage('te')" class="w-full text-left p-3 rounded-lg hover:bg-gray-100">తెలుగు (Telugu)</button>
+                         <button onclick="selectLanguage('mr')" class="w-full text-left p-3 rounded-lg hover:bg-gray-100">मराठी (Marathi)</button>
+                         <button onclick="selectLanguage('ta')" class="w-full text-left p-3 rounded-lg hover:bg-gray-100">தமிழ் (Tamil)</button>
+                         <button onclick="selectLanguage('gu')" class="w-full text-left p-3 rounded-lg hover:bg-gray-100">ગુજરાતી (Gujarati)</button>
+                         <button onclick="selectLanguage('kn')" class="w-full text-left p-3 rounded-lg hover:bg-gray-100">ಕನ್ನಡ (Kannada)</button>
+                         <button onclick="selectLanguage('ml')" class="w-full text-left p-3 rounded-lg hover:bg-gray-100">മലയാളം (Malayalam)</button>
+                         <button onclick="selectLanguage('pa')" class="w-full text-left p-3 rounded-lg hover:bg-gray-100">ਪੰਜਾਬੀ (Punjabi)</button>
+                    </div>
+                    <div class="p-4 border-t">
+                        <button onclick="closeLanguageModal()" class="w-full bg-gray-200 text-gray-800 font-semibold py-2 rounded-xl hover:bg-gray-300 transition-colors">Cancel</button>
+                    </div>
+                </div>
+            </div>
+    
+            <!-- Screen 3: Login/Signup Choice -->
+        <div id="login-choice-screen" class="screen p-8 flex flex-col justify-center items-center">
+             <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="w-32 h-32 mb-8">
+                <defs>
+                  <linearGradient id="logoGradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#34D399" />
+                    <stop offset="100%" stop-color="#10B981" />
+                  </linearGradient>
+                </defs>
+                <path fill="#A7F3D0" d="M63.8,11.3C52.1,4.1,38.2,3.3,26,9.5c-3.5,1.7-6.7,3.9-9.5,6.6C4.2,28.4,0,45.8,6.8,60.8c5.4,12,16.5,20.9,29.3,23.7c15.2,3.4,30.9-1.5,41.6-12.2c12-12,16.4-29,11.3-44.5C85.4,20,76,14.5,63.8,11.3z"/>
+                <path fill="url(#logoGradient2)" d="M50,25 C52.761,25 55,27.239 55,30 L55,45 L70,45 C72.761,45 75,47.239 75,50 C75,52.761 72.761,55 70,55 L55,55 L55,70 C55,72.761 52.761,75 50,75 C47.239,75 45,72.761 45,70 L45,55 L30,55 C27.239,55 25,52.761 25,50 C25,47.239 27.239,45 30,45 L45,45 L45,30 C45,27.239 47.239,25 50,25 Z"/>
+            </svg>
+            <h1 class="text-3xl font-bold mb-2" data-lang-key="welcome_title">Welcome to Swasth</h1>
+            <p class="text-gray-500 mb-12 text-center" data-lang-key="welcome_subtitle">Your trusted partner in health and wellness.</p>
+            <div class="w-full space-y-4">
+                <button onclick="showScreen('login-screen')" class="w-full bg-green-500 text-white font-semibold py-3 rounded-xl shadow-md hover:bg-green-600 transition-colors" data-lang-key="login">Login</button>
+                <button onclick="showScreen('signup-screen')" class="w-full bg-gray-200 text-gray-800 font-semibold py-3 rounded-xl hover:bg-gray-300 transition-colors" data-lang-key="signup">Sign Up</button>
+            </div>
+        </div>
+
+        <!-- Screen 4: Login Form -->
+        <div id="login-screen" class="screen p-8 flex flex-col">
+            <button onclick="showScreen('login-choice-screen')" class="self-start mb-8 text-gray-500 hover:text-gray-800">&larr; <span data-lang-key="back">Back</span></button>
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="w-24 h-24 mb-6 self-center">
+                <defs>
+                  <linearGradient id="logoGradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#34D399" />
+                    <stop offset="100%" stop-color="#10B981" />
+                  </linearGradient>
+                </defs>
+                <path fill="#A7F3D0" d="M63.8,11.3C52.1,4.1,38.2,3.3,26,9.5c-3.5,1.7-6.7,3.9-9.5,6.6C4.2,28.4,0,45.8,6.8,60.8c5.4,12,16.5,20.9,29.3,23.7c15.2,3.4,30.9-1.5,41.6-12.2c12-12,16.4-29,11.3-44.5C85.4,20,76,14.5,63.8,11.3z"/>
+                <path fill="url(#logoGradient3)" d="M50,25 C52.761,25 55,27.239 55,30 L55,45 L70,45 C72.761,45 75,47.239 75,50 C75,52.761 72.761,55 70,55 L55,55 L55,70 C55,72.761 52.761,75 50,75 C47.239,75 45,72.761 45,70 L45,55 L30,55 C27.239,55 25,52.761 25,50 C25,47.239 27.239,45 30,45 L45,45 L45,30 C45,27.239 47.239,25 50,25 Z"/>
+            </svg>
+            <h1 class="text-3xl font-bold mb-6 text-center" data-lang-key="login">Login</h1>
+            <div class="space-y-4">
+                <button onclick="showScreen('email-login-screen')" class="w-full flex items-center justify-center space-x-2 bg-white border border-gray-300 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-50 transition-colors"><i data-lucide="mail"></i> <span data-lang-key="login_email">Continue with Email</span></button>
+                <button onclick="showScreen('phone-login-screen')" class="w-full flex items-center justify-center space-x-2 bg-white border border-gray-300 text-gray-700 font-semibold py-3 rounded-xl hover:bg-gray-50 transition-colors"><i data-lucide="smartphone"></i> <span data-lang-key="login_phone">Continue with Phone</span></button>
+                <button onclick="loginUser('Ayush', 'N/A')" class="w-full flex items-center justify-center space-x-2 bg-blue-500 text-white font-semibold py-3 rounded-xl hover:bg-blue-600 transition-colors"><i data-lucide="lock"></i> <span data-lang-key="login_digilocker">Continue with DigiLocker</span></button>
+            </div>
+        </div>
+
+        <!-- Screen 4a: Email Login -->
+        <div id="email-login-screen" class="screen p-8 flex flex-col">
+            <button onclick="showScreen('login-screen')" class="self-start mb-4 text-gray-500 hover:text-gray-800">&larr; <span data-lang-key="back">Back</span></button>
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="w-24 h-24 mb-6 self-center">
+                <defs>
+                  <linearGradient id="logoGradient4" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#34D399" />
+                    <stop offset="100%" stop-color="#10B981" />
+                  </linearGradient>
+                </defs>
+                <path fill="#A7F3D0" d="M63.8,11.3C52.1,4.1,38.2,3.3,26,9.5c-3.5,1.7-6.7,3.9-9.5,6.6C4.2,28.4,0,45.8,6.8,60.8c5.4,12,16.5,20.9,29.3,23.7c15.2,3.4,30.9-1.5,41.6-12.2c12-12,16.4-29,11.3-44.5C85.4,20,76,14.5,63.8,11.3z"/>
+                <path fill="url(#logoGradient4)" d="M50,25 C52.761,25 55,27.239 55,30 L55,45 L70,45 C72.761,45 75,47.239 75,50 C75,52.761 72.761,55 70,55 L55,55 L55,70 C55,72.761 52.761,75 50,75 C47.239,75 45,72.761 45,70 L45,55 L30,55 C27.239,55 25,52.761 25,50 C25,47.239 27.239,45 30,45 L45,45 L45,30 C45,27.239 47.239,25 50,25 Z"/>
+            </svg>
+            <h1 class="text-3xl font-bold mb-6" data-lang-key="login_email_title">Login with Email</h1>
+            <form id="email-login-form" class="space-y-4">
+                <input type="email" id="login-email-input" placeholder="Email Address" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                <input type="password" placeholder="Password" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                <button type="submit" class="w-full bg-green-500 text-white font-semibold py-3 rounded-xl shadow-md hover:bg-green-600 transition-colors" data-lang-key="login">Login</button>
+            </form>
+        </div>
+
+        <!-- Screen 4b: Phone Login -->
+        <div id="phone-login-screen" class="screen p-8 flex flex-col">
+            <button onclick="showScreen('login-screen')" class="self-start mb-4 text-gray-500 hover:text-gray-800">&larr; <span data-lang-key="back">Back</span></button>
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="w-24 h-24 mb-6 self-center">
+                <defs>
+                  <linearGradient id="logoGradient5" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#34D399" />
+                    <stop offset="100%" stop-color="#10B981" />
+                  </linearGradient>
+                </defs>
+                <path fill="#A7F3D0" d="M63.8,11.3C52.1,4.1,38.2,3.3,26,9.5c-3.5,1.7-6.7,3.9-9.5,6.6C4.2,28.4,0,45.8,6.8,60.8c5.4,12,16.5,20.9,29.3,23.7c15.2,3.4,30.9-1.5,41.6-12.2c12-12,16.4-29,11.3-44.5C85.4,20,76,14.5,63.8,11.3z"/>
+                <path fill="url(#logoGradient5)" d="M50,25 C52.761,25 55,27.239 55,30 L55,45 L70,45 C72.761,45 75,47.239 75,50 C75,52.761 72.761,55 70,55 L55,55 L55,70 C55,72.761 52.761,75 50,75 C47.239,75 45,72.761 45,70 L45,55 L30,55 C27.239,55 25,52.761 25,50 C25,47.239 27.239,45 30,45 L45,45 L45,30 C45,27.239 47.239,25 50,25 Z"/>
+            </svg>
+            <h1 class="text-3xl font-bold mb-6" data-lang-key="login_phone_title">Login with Phone</h1>
+            <form onsubmit="event.preventDefault(); loginUser('Ayush', document.getElementById('login-phone-input').value || 'N/A');" class="space-y-4">
+                <input type="tel" id="login-phone-input" placeholder="Phone Number" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                <div id="phone-otp-section" class="hidden space-y-2">
+                     <p class="text-sm text-gray-600" data-lang-key="otp_sent">An OTP has been sent.</p>
+                     <input type="text" placeholder="Enter 6-digit OTP" maxlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                <button type="button" onclick="document.getElementById('phone-otp-section').classList.remove('hidden')" class="w-full bg-gray-200 text-gray-800 font-semibold py-3 rounded-xl hover:bg-gray-300 transition-colors" data-lang-key="get_otp">Get OTP</button>
+                <button type="submit" class="w-full bg-green-500 text-white font-semibold py-3 rounded-xl shadow-md hover:bg-green-600 transition-colors" data-lang-key="login">Login</button>
+            </form>
+        </div>
+
+        <!-- Screen 5: Signup Form -->
+        <div id="signup-screen" class="screen p-8 flex flex-col overflow-y-auto no-scrollbar">
+            <button onclick="showScreen('login-choice-screen')" class="self-start mb-4 text-gray-500 hover:text-gray-800">&larr; <span data-lang-key="back">Back</span></button>
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="w-24 h-24 mb-6 self-center">
+                <defs>
+                  <linearGradient id="logoGradient6" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stop-color="#34D399" />
+                    <stop offset="100%" stop-color="#10B981" />
+                  </linearGradient>
+                </defs>
+                <path fill="#A7F3D0" d="M63.8,11.3C52.1,4.1,38.2,3.3,26,9.5c-3.5,1.7-6.7,3.9-9.5,6.6C4.2,28.4,0,45.8,6.8,60.8c5.4,12,16.5,20.9,29.3,23.7c15.2,3.4,30.9-1.5,41.6-12.2c12-12,16.4-29,11.3-44.5C85.4,20,76,14.5,63.8,11.3z"/>
+                <path fill="url(#logoGradient6)" d="M50,25 C52.761,25 55,27.239 55,30 L55,45 L70,45 C72.761,45 75,47.239 75,50 C75,52.761 72.761,55 70,55 L55,55 L55,70 C55,72.761 52.761,75 50,75 C47.239,75 45,72.761 45,70 L45,55 L30,55 C27.239,55 25,52.761 25,50 C25,47.239 27.239,45 30,45 L45,45 L45,30 C45,27.239 47.239,25 50,25 Z"/>
+            </svg>
+            <h1 class="text-3xl font-bold mb-6 text-center" data-lang-key="create_account">Create Account</h1>
+            <form id="signup-form" class="space-y-4">
+                <input type="text" id="signup-name" placeholder="Full Name" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500">
+                <input type="tel" placeholder="Phone Number" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500">
+                <input type="text" placeholder="Address" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500">
+                <input id="aadhaar-no" type="text" placeholder="Aadhaar Number" maxlength="12" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500">
+                <div id="otp-section" class="hidden space-y-2">
+                    <p class="text-sm text-gray-600" data-lang-key="otp_sent">An OTP has been sent to your registered number.</p>
+                    <input id="otp-input" type="text" placeholder="Enter 6-digit OTP" maxlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500">
+                </div>
+                <button type="submit" class="w-full bg-green-500 text-white font-semibold py-3 rounded-xl shadow-md hover:bg-green-600 transition-colors" data-lang-key="signup">Sign Up</button>
+            </form>
+        </div>
+
+        <!-- Screen 6: Home Screen -->
+        <div id="home-screen" class="screen flex-col">
+            <div class="p-6 flex-grow overflow-y-auto pb-24 no-scrollbar">
+                <!-- Header -->
+                <div id="home-header" class="flex justify-between items-center mb-6">
+                    <div>
+                        <h1 id="greeting" class="text-2xl font-bold text-gray-800">Good Morning</h1>
+                        <div class="flex items-center text-sm text-gray-500">
+                             <i data-lucide="map-pin" class="w-4 h-4 mr-1"></i>
+                            <span id="location">Fetching location...</span>
+                        </div>
+                    </div>
+                    <img onclick="navigateTo('profile-screen', document.querySelector('.nav-item[onclick*=\'profile-screen\']'))" src="https://placehold.co/40x40/E2E8F0/4A5568?text=U" alt="User Profile" class="w-10 h-10 rounded-full cursor-pointer">
+                </div>
+
+                <!-- Search Bar -->
+                <form id="home-search-form" class="relative mb-6">
+                    <input type="text" id="home-search-input" placeholder="Search for doctors, medicines..." class="w-full bg-gray-100 border-transparent rounded-xl py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-green-500">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5"></i>
+                </form>
+
+                <!-- Main Content Area -->
+                <div id="home-main-content" class="space-y-6">
+                     <p class="text-gray-600 text-lg font-medium" data-lang-key="essentials">Essentials</p>
+                     <div class="grid grid-cols-2 gap-4">
+                        <div onclick="startSymptomChecker()" class="bg-green-100 p-4 rounded-xl text-center cursor-pointer hover:bg-green-200 transition-colors">
+                            <i data-lucide="calendar-plus" class="mx-auto w-8 h-8 text-green-600 mb-2"></i>
+                            <p class="font-semibold text-green-800" data-lang-key="book_appointment">Book Appointment</p>
+                        </div>
+                        <div onclick="openDoctorsList()" class="bg-blue-100 p-4 rounded-xl text-center cursor-pointer hover:bg-blue-200 transition-colors">
+                            <i data-lucide="stethoscope" class="mx-auto w-8 h-8 text-blue-600 mb-2"></i>
+                            <p class="font-semibold text-blue-800" data-lang-key="connect_doctor">Connect to Doctor</p>
+                        </div>
+                        <div onclick="navigateTo('records-screen', document.querySelector('.nav-item[onclick*=\'records-screen\']'))" class="bg-purple-100 p-4 rounded-xl text-center cursor-pointer hover:bg-purple-200 transition-colors">
+                           <i data-lucide="folder-kanban" class="mx-auto w-8 h-8 text-purple-600 mb-2"></i>
+                            <p class="font-semibold text-purple-800" data-lang-key="medical_records">Medical Records</p>
+                        </div>
+                        <div onclick="navigateTo('medicine-stock-screen')" class="bg-yellow-100 p-4 rounded-xl text-center cursor-pointer hover:bg-yellow-200 transition-colors">
+                            <i data-lucide="pilcrow" class="mx-auto w-8 h-8 text-yellow-600 mb-2"></i>
+                            <p class="font-semibold text-yellow-800" data-lang-key="medicine_stock">Medicine Stock</p>
+                        </div>
+                    </div>
+
+                    <!-- Health Tip -->
+                    <div class="bg-blue-50 p-4 rounded-xl mt-6">
+                        <h3 class="font-bold text-blue-800 mb-2" data-lang-key="health_tip_title">Today's Health Tip</h3>
+                        <p id="health-tip-content" class="text-sm text-blue-700">Loading today's tip...</p>
+                    </div>
+
+                    <!-- Upcoming Appointments -->
+                    <div class="mt-6">
+                        <h3 class="text-lg font-medium text-gray-700 mb-2" data-lang-key="upcoming_appointments">Upcoming Appointments</h3>
+                        <div id="upcoming-appointments-list" class="space-y-3 bg-white border border-gray-200 p-4 rounded-xl">
+                             <p class="text-gray-400">No upcoming appointments.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Navigation -->
+            <div class="bottom-nav w-full bg-white p-2 grid grid-cols-5 items-center absolute bottom-0">
+                <a onclick="navigateTo('home-screen', this)" class="nav-item text-center text-green-500">
+                    <i data-lucide="home" class="mx-auto"></i> <span class="text-xs" data-lang-key="home">Home</span>
+                </a>
+                <a onclick="navigateTo('appointments-screen', this)" class="nav-item text-center text-gray-500 hover:text-green-500">
+                    <i data-lucide="calendar-days" class="mx-auto"></i> <span class="text-xs" data-lang-key="appointments">Appointments</span>
+                </a>
+                <a onclick="navigateTo('ai-chat-screen', this)" class="text-center">
+                    <div class="bg-green-500 w-14 h-14 rounded-full flex items-center justify-center text-white -mt-8 shadow-lg">
+                        <i data-lucide="bot" class="w-8 h-8"></i>
+                    </div>
+                </a>
+                <a onclick="navigateTo('records-screen', this)" class="nav-item text-center text-gray-500 hover:text-green-500">
+                    <i data-lucide="file-text" class="mx-auto"></i> <span class="text-xs" data-lang-key="records">Records</span>
+                </a>
+                 <a onclick="navigateTo('profile-screen', this)" class="nav-item text-center text-gray-500 hover:text-green-500">
+                    <i data-lucide="user" class="mx-auto"></i> <span class="text-xs" data-lang-key="profile">Profile</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Screen 7: Profile Screen -->
+        <div id="profile-screen" class="screen flex-col">
+             <div class="p-6 flex-grow overflow-y-auto pb-24 no-scrollbar">
+                 <div class="flex items-center mb-8">
+                    <button onclick="navigateTo('home-screen', document.querySelector('.nav-item[onclick*=\'home-screen\']'))" class="text-gray-500 hover:text-gray-800">&larr;</button>
+                    <h1 class="text-3xl font-bold ml-4" data-lang-key="profile">Profile</h1>
+                 </div>
+                 <div class="space-y-4">
+                    <p class="text-lg" id="profile-user-name">User Name</p>
+                    <p class="text-gray-500" id="profile-user-email">user@example.com</p>
+                    <button onclick="showScreen('notifications-screen')" class="w-full text-left py-3 px-2 rounded-lg hover:bg-gray-100" data-lang-key="notifications">Notifications</button>
+                    <button onclick="showScreen('help-support-screen')" class="w-full text-left py-3 px-2 rounded-lg hover:bg-gray-100" data-lang-key="help_support">Help & Support</button>
+                    <button onclick="logout()" class="w-full text-left py-3 px-2 rounded-lg text-red-500 hover:bg-red-50" data-lang-key="logout">Logout</button>
+                 </div>
+            </div>
+        </div>
+
+        <!-- Appointments Screen -->
+        <div id="appointments-screen" class="screen flex-col">
+            <div class="p-6 flex-grow overflow-y-auto pb-24 no-scrollbar">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <button onclick="navigateTo('home-screen', document.querySelector('.nav-item[onclick*=\'home-screen\']'))" class="text-gray-500 hover:text-gray-800">&larr;</button>
+                        <h1 class="text-3xl font-bold ml-4" data-lang-key="appointments">Appointments</h1>
+                    </div>
+                    <button onclick="startSymptomChecker()" class="bg-green-500 text-white font-semibold py-2 px-4 rounded-xl shadow-md hover:bg-green-600 transition-colors flex items-center space-x-2">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                        <span>Book</span>
+                    </button>
+                </div>
+                <div id="appointments-list" class="space-y-4"></div>
+            </div>
+        </div>
+
+        <!-- Records Screen -->
+        <div id="records-screen" class="screen flex-col">
+            <div class="p-6 flex-grow overflow-y-auto pb-24 no-scrollbar">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <button onclick="navigateTo('home-screen', document.querySelector('.nav-item[onclick*=\'home-screen\']'))" class="text-gray-500 hover:text-gray-800">&larr;</button>
+                        <h1 class="text-3xl font-bold ml-4" data-lang-key="medical_records">Medical Records</h1>
+                    </div>
+                    <button onclick="openAddDocumentModal()" class="bg-green-500 text-white font-semibold py-2 px-4 rounded-xl shadow-md hover:bg-green-600 transition-colors flex items-center space-x-2">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                        <span>Add</span>
+                    </button>
+                </div>
+                <div id="records-list" class="space-y-3"></div>
+            </div>
+        </div>
+
+        <!-- AI Chat Screen -->
+        <div id="ai-chat-screen" class="screen flex flex-col">
+            <div class="p-4 bg-white shadow-md flex items-center">
+                <button onclick="navigateTo('home-screen', document.querySelector('.nav-item[onclick*=\'home-screen\']'))" class="text-gray-500 hover:text-gray-800 mr-4">&larr;</button>
+                <h1 class="text-xl font-bold" data-lang-key="ai_doctor">AI Doctor</h1>
+            </div>
+            <div id="chat-history" class="flex-grow p-4 overflow-y-auto bg-gray-50 no-scrollbar">
+                <div class="flex justify-start mb-4">
+                    <div class="bg-green-100 p-3 rounded-lg max-w-xs">
+                        <p class="text-sm">Hello! I am Swasth's AI assistant. Ask me anything about health, medicines, or symptoms.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-white border-t">
+                <form id="chat-form" class="relative">
+                    <input id="chat-input" type="text" placeholder="Type your message..." class="w-full bg-gray-100 border-transparent rounded-xl py-3 pl-4 pr-12 focus:outline-none focus:ring-2 focus:ring-green-500" autocomplete="off">
+                    <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
+                         <i data-lucide="send" class="w-6 h-6"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- ############# DOCTOR SCREENS START HERE ############# -->
+
+        <!-- Doctors List Screen -->
+        <div id="doctors-list-screen" class="screen flex-col">
+            <div class="p-6 flex-grow overflow-y-auto pb-24 no-scrollbar">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <button onclick="navigateTo('home-screen', document.querySelector('.nav-item[onclick*=\'home-screen\']'))" class="text-gray-500 hover:text-gray-800">&larr;</button>
+                        <h1 class="text-3xl font-bold ml-4" data-lang-key="connect_doctor">Connect to Doctor</h1>
+                    </div>
+                    <button onclick="openAddDoctorModal()" class="bg-green-500 text-white font-semibold py-2 px-4 rounded-xl shadow-md hover:bg-green-600 transition-colors flex items-center space-x-2">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                        <span>Add</span>
+                    </button>
+                </div>
+                <div id="doctors-list" class="space-y-3"></div>
+            </div>
+        </div>
+        
+        <!-- Notifications Screen -->
+        <div id="notifications-screen" class="screen flex-col">
+            <div class="p-6 flex-grow overflow-y-auto pb-24 no-scrollbar">
+                <div class="flex items-center mb-6">
+                    <button onclick="navigateTo('profile-screen', document.querySelector('.nav-item[onclick*=\'profile-screen\']'))" class="text-gray-500 hover:text-gray-800">&larr;</button>
+                    <h1 class="text-3xl font-bold ml-4" data-lang-key="notifications">Notifications</h1>
+                </div>
+                <div class="space-y-4">
+                    <div class="bg-blue-50 p-4 rounded-lg flex items-start space-x-4">
+                        <i data-lucide="calendar-check" class="w-8 h-8 text-blue-500 mt-1"></i>
+                        <div>
+                            <h3 class="font-bold">Appointment Reminder</h3>
+                            <p class="text-sm text-gray-600">Your appointment with Dr. Priya Singh is tomorrow at 10:30 AM.</p>
+                        </div>
+                    </div>
+                     <div class="bg-green-50 p-4 rounded-lg flex items-start space-x-4">
+                        <i data-lucide="clipboard-check" class="w-8 h-8 text-green-500 mt-1"></i>
+                        <div>
+                            <h3 class="font-bold">New Record Added</h3>
+                            <p class="text-sm text-gray-600">Your Blood Test Report has been successfully added to your records.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Help & Support Screen -->
+        <div id="help-support-screen" class="screen flex-col">
+            <div class="p-6 flex-grow overflow-y-auto pb-24 no-scrollbar">
+                <div class="flex items-center mb-6">
+                    <button onclick="navigateTo('profile-screen', document.querySelector('.nav-item[onclick*=\'profile-screen\']'))" class="text-gray-500 hover:text-gray-800">&larr;</button>
+                    <h1 class="text-3xl font-bold ml-4" data-lang-key="help_support">Help & Support</h1>
+                </div>
+                <div class="space-y-6">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="font-bold text-lg mb-2">Contact Us</h3>
+                        <p class="font-semibold">Team Swasth</p>
+                        <p class="text-gray-600">For any queries, please reach out to us.</p>
+                        <div class="mt-4 space-y-2">
+                            <p class="flex items-center"><i data-lucide="phone" class="w-4 h-4 mr-2 text-green-500"></i> +91 9315728922</p>
+                            <p class="flex items-center"><i data-lucide="mail" class="w-4 h-4 mr-2 text-green-500"></i> swasth@example.com</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Medicine Stock Screen -->
+        <div id="medicine-stock-screen" class="screen flex-col">
+            <div class="p-6 flex-grow overflow-y-auto pb-24 no-scrollbar">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center">
+                        <button onclick="navigateTo('home-screen', document.querySelector('.nav-item[onclick*=\'home-screen\']'))" class="text-gray-500 hover:text-gray-800">&larr;</button>
+                        <h1 class="text-3xl font-bold ml-4" data-lang-key="medicine_stock">Medicine Stock</h1>
+                    </div>
+                    <button onclick="openAddMedicineModal()" class="bg-green-500 text-white font-semibold py-2 px-4 rounded-xl shadow-md hover:bg-green-600 transition-colors flex items-center space-x-2">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                        <span>Add</span>
+                    </button>
+                </div>
+                <div id="medicine-list" class="space-y-3"></div>
+            </div>
+        </div>
+
+        <!-- Search Results Screen -->
+        <div id="search-results-screen" class="screen flex-col">
+            <div class="p-6 flex-grow overflow-y-auto pb-24 no-scrollbar">
+                <div class="flex items-center mb-6">
+                    <button onclick="navigateTo('home-screen', document.querySelector('.nav-item[onclick*=\'home-screen\']'))" class="text-gray-500 hover:text-gray-800">&larr;</button>
+                    <h1 class="text-3xl font-bold ml-4">Search Results</h1>
+                </div>
+                <div id="search-results-list" class="space-y-4"></div>
+            </div>
+        </div>
+        
+        <!-- Symptom Checker Screen -->
+        <div id="symptom-checker-screen" class="screen flex-col">
+            <div class="p-6">
+                 <div class="flex items-center mb-6">
+                    <button onclick="navigateTo('home-screen', document.querySelector('.nav-item[onclick*=\'home-screen\']'))" class="text-gray-500 hover:text-gray-800">&larr;</button>
+                    <h1 class="text-3xl font-bold ml-4">Symptom Checker</h1>
+                </div>
+                <p class="text-gray-600 mb-6">Describe your symptoms to get a doctor recommendation.</p>
+            </div>
+            <form id="symptom-form" class="p-6 pt-0 space-y-4 flex-grow flex flex-col">
+                <input id="symptom-patient-name" type="text" placeholder="Patient's Full Name" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500">
+                <textarea id="symptoms-input" placeholder="Describe your symptoms in detail... (e.g., chest pain, headache)" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 flex-grow" rows="6"></textarea>
+                <textarea id="medications-input" placeholder="Any current medications you are taking?" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" rows="3"></textarea>
+                <button type="submit" class="w-full bg-green-500 text-white font-semibold py-3 rounded-xl shadow-md hover:bg-green-600 transition-colors mt-auto">Analyze Symptoms</button>
+            </form>
+        </div>
+        
+        <!-- Analysis Screen -->
+        <div id="analysis-screen" class="screen justify-center items-center text-center p-8">
+            <i data-lucide="loader-2" class="w-16 h-16 text-green-500 animate-spin"></i>
+            <p class="text-lg text-gray-600 mt-4">Analyzing your symptoms...</p>
+        </div>
+        
+        <!-- Recommended Doctors Screen -->
+        <div id="recommended-doctors-screen" class="screen flex-col">
+            <div class="p-6 flex-grow overflow-y-auto pb-24 no-scrollbar">
+                <div class="flex items-center mb-6">
+                    <button onclick="showScreen('symptom-checker-screen')" class="text-gray-500 hover:text-gray-800">&larr;</button>
+                    <h1 id="recommendation-title" class="text-2xl font-bold ml-4">Recommended Doctors</h1>
+                </div>
+                <div id="recommended-doctors-list" class="space-y-3"></div>
+            </div>
+        </div>
+        
+        <!-- File Viewer Screen -->
+        <div id="file-viewer-screen" class="screen flex-col bg-gray-100">
+            <div class="p-4 bg-white shadow-md flex items-center sticky top-0">
+                <button onclick="navigateTo('records-screen', document.querySelector('.nav-item[onclick*=\'records-screen\']'))" class="text-gray-500 hover:text-gray-800 mr-4">&larr;</button>
+                <h1 id="file-viewer-title" class="text-xl font-bold truncate">Document</h1>
+            </div>
+            <div id="file-viewer-content" class="flex-grow flex justify-center items-center overflow-auto">
+                <!-- Content (img or iframe) will be injected here -->
+            </div>
+        </div>
+
+
+        <!-- ############# MODALS START HERE ############# -->
+
+        <!-- Appointment Booking Modal -->
+        <div id="appointment-modal" class="screen p-6 justify-center items-center bg-black bg-opacity-50" style="z-index: 20;">
+            <div class="bg-white rounded-2xl w-full max-w-sm m-auto flex flex-col animate-fadeInZoom-sm">
+                <h2 class="text-xl font-bold p-4 border-b">Book an Appointment</h2>
+                <form id="booking-form" class="p-4 space-y-3">
+                    <input type="text" id="patient-name" placeholder="Patient Name" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                    <input type="tel" id="patient-contact" placeholder="Contact Number" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                    <select id="doctor-name" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 bg-white" required>
+                        <option value="">Select Doctor</option>
+                    </select>
+                    <input type="date" id="appointment-date" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                    <input type="time" id="appointment-time" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                </form>
+                <div class="p-4 border-t grid grid-cols-2 gap-3">
+                    <button onclick="closeAppointmentModal()" class="w-full bg-gray-200 text-gray-800 font-semibold py-2 rounded-xl hover:bg-gray-300 transition-colors">Cancel</button>
+                    <button onclick="submitAppointment()" class="w-full bg-green-500 text-white font-semibold py-2 rounded-xl hover:bg-green-600 transition-colors">Confirm</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add Document Modal -->
+        <div id="add-document-modal" class="screen p-6 justify-center items-center bg-black bg-opacity-50" style="z-index: 20;">
+            <div class="bg-white rounded-2xl w-full max-w-sm m-auto flex flex-col animate-fadeInZoom-sm">
+                <h2 class="text-xl font-bold p-4 border-b">Add Medical Record</h2>
+                <form id="add-document-form" class="p-4 space-y-3">
+                    <input type="text" id="new-document-name" placeholder="Document Name (e.g., Blood Report)" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                    <input type="file" id="new-document-file" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100" required>
+                </form>
+                <div class="p-4 border-t grid grid-cols-2 gap-3">
+                    <button onclick="closeAddDocumentModal()" class="w-full bg-gray-200 text-gray-800 font-semibold py-2 rounded-xl hover:bg-gray-300 transition-colors">Cancel</button>
+                    <button onclick="submitNewDocument()" class="w-full bg-green-500 text-white font-semibold py-2 rounded-xl hover:bg-green-600 transition-colors">Add</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Add Medicine Modal -->
+        <div id="add-medicine-modal" class="screen p-6 justify-center items-center bg-black bg-opacity-50" style="z-index: 20;">
+            <div class="bg-white rounded-2xl w-full max-w-sm m-auto flex flex-col animate-fadeInZoom-sm">
+                <h2 class="text-xl font-bold p-4 border-b">Add New Medicine</h2>
+                <form id="add-medicine-form" class="p-4 space-y-3">
+                    <input type="text" id="new-medicine-name" placeholder="Medicine Name" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                    <input type="text" id="new-medicine-qty" placeholder="Quantity (e.g., 50 tablets)" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                    <input type="text" id="new-medicine-batch" placeholder="Batch No." class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                </form>
+                <div class="p-4 border-t grid grid-cols-2 gap-3">
+                    <button onclick="closeAddMedicineModal()" class="w-full bg-gray-200 text-gray-800 font-semibold py-2 rounded-xl hover:bg-gray-300 transition-colors">Cancel</button>
+                    <button onclick="submitNewMedicine()" class="w-full bg-green-500 text-white font-semibold py-2 rounded-xl hover:bg-green-600 transition-colors">Add</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal for Deletion -->
+        <div id="delete-confirm-modal" class="screen p-6 justify-center items-center bg-black bg-opacity-50" style="z-index: 30;">
+            <div class="bg-white rounded-2xl w-full max-w-sm m-auto flex flex-col animate-fadeInZoom-sm p-6 text-center">
+                <h2 class="text-xl font-bold mb-4">Confirm Deletion</h2>
+                <p class="text-gray-600 mb-6" id="delete-confirm-text">Are you sure you want to delete this?</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="hideDeleteConfirmation()" class="w-full bg-gray-200 text-gray-800 font-semibold py-2 rounded-xl hover:bg-gray-300 transition-colors">Cancel</button>
+                    <button id="confirm-delete-btn" onclick="confirmDeletion()" class="w-full bg-red-500 text-white font-semibold py-2 rounded-xl hover:bg-red-600 transition-colors">Delete</button>
+                </div>
+            </div>
+        </div>
+        
+         <!-- Booking Error Modal -->
+        <div id="booking-error-modal" class="screen p-6 justify-center items-center bg-black bg-opacity-50" style="z-index: 30;">
+            <div class="bg-white rounded-2xl w-full max-w-sm m-auto flex flex-col animate-fadeInZoom-sm p-6 text-center">
+                <h2 class="text-xl font-bold mb-4 text-red-500">Booking Unavailable</h2>
+                <p class="text-gray-600 mb-6" id="booking-error-text">Please select a different time.</p>
+                <button onclick="hideBookingError()" class="w-full bg-gray-200 text-gray-800 font-semibold py-2 rounded-xl hover:bg-gray-300 transition-colors">OK</button>
+            </div>
+        </div>
+
+        <!-- Add Doctor Modal -->
+        <div id="add-doctor-modal" class="screen p-6 justify-center items-center bg-black bg-opacity-50" style="z-index: 20;">
+            <div class="bg-white rounded-2xl w-full max-w-sm m-auto flex flex-col animate-fadeInZoom-sm">
+                <h2 class="text-xl font-bold p-4 border-b">Add New Doctor</h2>
+                <form id="add-doctor-form" class="p-4 space-y-3">
+                    <input type="text" id="new-doctor-name" placeholder="Doctor's Full Name" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                    <input type="text" id="new-doctor-spec" placeholder="Specialization (e.g., Cardiologist)" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                    <input type="tel" id="new-doctor-phone" placeholder="Phone Number (e.g., 919876543210)" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500" required>
+                </form>
+                <div class="p-4 border-t grid grid-cols-2 gap-3">
+                    <button onclick="closeAddDoctorModal()" class="w-full bg-gray-200 text-gray-800 font-semibold py-2 rounded-xl hover:bg-gray-300 transition-colors">Cancel</button>
+                    <button onclick="submitNewDoctor()" class="w-full bg-green-500 text-white font-semibold py-2 rounded-xl hover:bg-green-600 transition-colors">Add Doctor</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- WhatsApp Confirmation Modal -->
+        <div id="whatsapp-confirm-modal" class="screen p-6 justify-center items-center bg-black bg-opacity-50" style="z-index: 30;">
+            <div class="bg-white rounded-2xl w-full max-w-sm m-auto flex flex-col animate-fadeInZoom-sm p-6 text-center">
+                <h2 class="text-xl font-bold mb-4">Continue to WhatsApp?</h2>
+                <p class="text-gray-600 mb-6" id="whatsapp-confirm-text">You will be redirected to WhatsApp to continue.</p>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="hideWhatsAppConfirmation()" class="w-full bg-gray-200 text-gray-800 font-semibold py-2 rounded-xl hover:bg-gray-300 transition-colors">Cancel</button>
+                    <button id="confirm-whatsapp-btn" class="w-full bg-green-500 text-white font-semibold py-2 rounded-xl hover:bg-green-600 transition-colors">Continue</button>
+                </div>
+            </div>
+        </div>
+
+        </div>
+    </div>
+    <script>
+        lucide.createIcons();
+
+        const translations = {
+            en: { select_language_title: "Select Your Language", select_language_subtitle: "Choose the language for your app experience.", welcome_title: "Welcome to Swasth", welcome_subtitle: "Your trusted partner in health and wellness.", login: "Login", signup: "Sign Up", back: "Back", login_email: "Continue with Email", login_phone: "Continue with Phone", login_digilocker: "Continue with DigiLocker", login_email_title: "Login with Email", login_phone_title: "Login with Phone", get_otp: "Get OTP", create_account: "Create Account", otp_sent: "An OTP has been sent.", essentials: "Essentials", book_appointment: "Book Appointment", connect_doctor: "Connect to Doctor", medical_records: "Medical Records", medicine_stock: "Medicine Stock", health_tip_title: "Today's Health Tip", upcoming_appointments: "Upcoming Appointments", home: "Home", appointments: "Appointments", records: "Records", profile: "Profile", ai_doctor: "AI Doctor", notifications: "Notifications", help_support: "Help & Support", logout: "Logout", good_morning: "Good Morning", good_afternoon: "Good Afternoon", good_evening: "Good Evening", good_night: "Good Night" },
+            hi: { select_language_title: "अपनी भाषा चुनें", select_language_subtitle: "ऐप अनुभव के लिए भाषा चुनें।", welcome_title: "स्वस्थ में आपका स्वागत है", welcome_subtitle: "स्वास्थ्य और कल्याण में आपका विश्वसनीय साथी।", login: "लॉग इन करें", signup: "साइन अप करें", back: "वापस", login_email: "ईमेल के साथ जारी रखें", login_phone: "फोन के साथ जारी रखें", login_digilocker: "डिजीलॉकर के साथ जारी रखें", login_email_title: "ईमेल से लॉगिन करें", login_phone_title: "फोन से लॉगिन करें", get_otp: "ओटीपी प्राप्त करें", create_account: "खाता बनाएं", otp_sent: "आपके पंजीकृत नंबर पर एक ओटीपी भेजा गया है।", essentials: "आवश्यक वस्तुएँ", book_appointment: "अपॉइंटमेंट बुक करें", connect_doctor: "डॉक्टर से जुड़ें", medical_records: "चिकित्सा रिकॉर्ड", medicine_stock: "दवा स्टॉक", health_tip_title: "आज का स्वास्थ्य सुझाव", upcoming_appointments: "आगामी अपॉइंटमेंट", home: "होम", appointments: "अपॉइंटमेंट", records: "रिकॉर्ड", profile: "प्रोफ़ाइल", ai_doctor: "एआई डॉक्टर", notifications: "सूचनाएं", help_support: "सहायता और समर्थन", logout: "लॉग आउट", good_morning: "सुप्रभात", good_afternoon: "शुभ दोपहर", good_evening: "शुभ संध्या", good_night: "शुभ रात्रि" },
+            bn: { select_language_title: "আপনার ভাষা নির্বাচন করুন", select_language_subtitle: "অ্যাপের অভিজ্ঞতার জন্য ভাষা বেছে নিন।", welcome_title: "স্বাস্থ্যে স্বাগতম", welcome_subtitle: "স্বাস্থ্য এবং সুস্থতার জন্য আপনার বিশ্বস্ত সঙ্গী।", login: "লগইন", signup: "সাইন আপ", back: "ফিরে যান", login_email: "ইমেল দিয়ে চালিয়ে যান", login_phone: "ফোন দিয়ে চালিয়ে যান", login_digilocker: "ডিজি-লকার দিয়ে চালিয়ে যান", login_email_title: "ইমেল দিয়ে লগইন করুন", login_phone_title: "ফোন দিয়ে লগইন করুন", get_otp: "OTP পান", create_account: "অ্যাকাউন্ট তৈরি করুন", otp_sent: "একটি OTP পাঠানো হয়েছে।", essentials: "অপরিহার্য", book_appointment: "অ্যাপয়েন্টমেন্ট বুক করুন", connect_doctor: "ডাক্তারের সাথে সংযোগ করুন", medical_records: "মেডিকেল রেকর্ড", medicine_stock: "ওষুধের স্টক", health_tip_title: "আজকের স্বাস্থ্য টিপ", upcoming_appointments: "আসন্ন অ্যাপয়েন্টমেন্ট", home: "হোম", appointments: "অ্যাপয়েন্টমেন্ট", records: "রেকর্ড", profile: "প্রোফাইল", ai_doctor: "AI ডাক্তার", notifications: "বিজ্ঞপ্তি", help_support: "সহায়তা ও সমর্থন", logout: "লগ আউট", good_morning: "সুপ্রভাত", good_afternoon: "শুভ অপরাহ্ন", good_evening: "শুভ সন্ধ্যা", good_night: "শুভ রাত্রি" },
+            te: { select_language_title: "మీ భాషను ఎంచుకోండి", select_language_subtitle: "యాప్ అనుభవం కోసం భాషను ఎంచుకోండి.", welcome_title: "స్వాస్థ్యకు స్వాగతం", welcome_subtitle: "ఆరోగ్యం మరియు శ్రేయస్సులో మీ నమ్మకమైన భాగస్వామి.", login: "లాగిన్", signup: "సైన్ అప్", back: "వెనుకకు", login_email: "ఇమెయిల్‌తో కొనసాగండి", login_phone: "ఫోన్‌తో కొనసాగండి", login_digilocker: "డిజిలాకర్‌తో కొనసాగండి", login_email_title: "ఇమెయిల్‌తో లాగిన్ చేయండి", login_phone_title: "ఫోన్‌తో లాగిన్ చేయండి", get_otp: "OTP పొందండి", create_account: "ఖాతా సృష్టించండి", otp_sent: "ఒక OTP పంపబడింది.", essentials: "అవసరమైనవి", book_appointment: "అపాయింట్‌మెంట్ బుక్ చేయండి", connect_doctor: "డాక్టర్‌తో కనెక్ట్ అవ్వండి", medical_records: "వైద్య రికార్డులు", medicine_stock: "మందుల స్టాక్", health_tip_title: "ఈరోజు ఆరోగ్య చిట్కా", upcoming_appointments: "రాబోయే అపాయింట్‌మెంట్‌లు", home: "హోమ్", appointments: "అపాయింట్‌మెంట్‌లు", records: "రికార్డులు", profile: "ప్రొఫైల్", ai_doctor: "AI డాక్టర్", notifications: "నోటిఫికేషన్‌లు", help_support: "సహాయం & మద్దతు", logout: "లాగ్ అవుట్", good_morning: "శుభోదయం", good_afternoon: "శుభ మధ్యాహ్నం", good_evening: "శుభ సాయంత్రం", good_night: "శుభ రాత్రి" },
+            mr: { select_language_title: "तुमची भाषा निवडा", select_language_subtitle: "अॅप अनुभवासाठी भाषा निवडा.", welcome_title: "स्वस्थ मध्ये आपले स्वागत आहे", welcome_subtitle: "आरोग्य आणि कल्याणामधील तुमचा विश्वासू भागीদার.", login: "लॉग इन करा", signup: "नोंदणी करा", back: "मागे", login_email: "ईमेलसह सुरू ठेवा", login_phone: "फोनसह सुरू ठेवा", login_digilocker: "डिजीलॉकरसह सुरू ठेवा", login_email_title: "ईमेलने लॉगिन करा", login_phone_title: "फोनने लॉगिन करा", get_otp: "ओटीपी मिळवा", create_account: "खाते तयार करा", otp_sent: "एक ओटीपी पाठवला आहे.", essentials: "आवश्यक", book_appointment: "অ্যাপॉइंटमेंट बुक करा", connect_doctor: "डॉक्टरशी संपर्क साधा", medical_records: "वैद्यकीय रेकॉर्ड", medicine_stock: "औषध साठा", health_tip_title: "आजची आरोग्य टीप", upcoming_appointments: "ये आगामी अपॉइंटमेंट्स", home: "मुख्यपृष्ठ", appointments: "অ্যাপॉइंटमेंट्स", records: "रेकॉर्ड", profile: "प्रोफाइल", ai_doctor: "एआय डॉक्टर", notifications: "सूचना", help_support: "मदत आणि समर्थन", logout: "लॉगआउट", good_morning: "शुभ सकाळ", good_afternoon: "शुभ दुपार", good_evening: "शुभ संध्याकाळ", good_night: "शुभ रात्री" },
+            ta: { select_language_title: "உங்கள் மொழியைத் தேர்ந்தெடுக்கவும்", select_language_subtitle: "பயன்பாட்டு அனுபவத்திற்காக உங்கள் மொழியைத் தேர்ந்தெடுக்கவும்.", welcome_title: "ஸ்வஸ்த்க்கு வரவேற்கிறோம்", welcome_subtitle: "உடல்நலம் மற்றும் সুস্থ வாழ்விற்கு உங்கள் நம்பகமான துணை.", login: "உள்நுழைய", signup: "பதிவு செய்க", back: "பின்செல்", login_email: "மின்னஞ்சலுடன் தொடரவும்", login_phone: "தொலைபேசியுடன் தொடரவும்", login_digilocker: "டிஜிலாக்கருடன் தொடரவும்", login_email_title: "மின்னஞ்சல் மூலம் உள்நுழையவும்", login_phone_title: "தொலைபேசி மூலம் உள்நுழையவும்", get_otp: "OTP பெறவும்", create_account: "கணக்கை உருவாக்கவும்", otp_sent: "ஒரு OTP அனுப்பப்பட்டது.", essentials: "அத்தியாவசியமானவை", book_appointment: "சந்திப்பை பதிவு செய்யவும்", connect_doctor: " மருத்துவருடன் இணையவும்", medical_records: "மருத்துவ பதிவுகள்", medicine_stock: "மருந்து இருப்பு", health_tip_title: "இன்றைய சுகாதார குறிப்பு", upcoming_appointments: "வரவிருக்கும் சந்திப்புகள்", home: "முகப்பு", appointments: "சந்திப்புகள்", records: "பதிவுகள்", profile: "சுயவிவரம்", ai_doctor: "AI மருத்துவர்", notifications: "அறிவிப்புகள்", help_support: "உதவி & ஆதரவு", logout: "வெளியேறு", good_morning: "காலை வணக்கம்", good_afternoon: "மதிய வணக்கம்", good_evening: "மாலை வணக்கம்", good_night: "இரவு வணக்கம்" },
+            gu: { select_language_title: "તમારી ભાષા પસંદ કરો", select_language_subtitle: "એપ્લિકેશન અનુભવ માટે ભાષા પસંદ કરો.", welcome_title: "સ્વસ્થમાં આપનું સ્વાગત છે", welcome_subtitle: "આરોગ્ય અને સુખાકારીમાં તમારા વિશ્વાસુ ભાગીદાર.", login: "લૉગિન કરો", signup: "સાઇન અપ કરો", back: "પાછા", login_email: "ઇમેઇલ સાથે ચાલુ રાખો", login_phone: "ફોન સાથે ચાલુ રાખો", login_digilocker: "ડિજિલોકર સાથે ચાલુ રાખો", login_email_title: "ઇમેઇਲથી લોગિન કરો", login_phone_title: "ફોનથી લોગિન કરો", get_otp: "OTP મેળવો", create_account: "એકાઉન્ટ બનાવો", otp_sent: "એક OTP મોકલવામાં આવ્યો છે.", essentials: "જરૂરીયાતો", book_appointment: "એપોઇન્ટમેન્ટ બુક કરો", connect_doctor: "ડૉક્ટર સાથે જોડાઓ", medical_records: "મેડિકલ રેકોર્ડ્સ", medicine_stock: "દવાનો સ્ટોક", health_tip_title: "આજની આરોગ્ય ટિપ", upcoming_appointments: "આગામી એપોઇન્ટમેન્ટ્સ", home: "હોમ", appointments: "એપોઇન્ટમેન્ટ્સ", records: "રેકોર્ડ્સ", profile: "પ્રોફાઇલ", ai_doctor: "AI ડોક્ટર", notifications: "સૂચનાઓ", help_support: "મદદ અને સમર્થન", logout: "લૉગ આઉટ", good_morning: "સુપ્રભાત", good_afternoon: "શુભ બપોર", good_evening: "શુભ સાંજ", good_night: "શુભ રાત્રી" },
+            kn: { select_language_title: "ನಿಮ್ಮ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ", select_language_subtitle: "ಅಪ್ಲಿಕೇಶನ್ ಅನುಭವಕ್ಕಾಗಿ ನಿಮ್ಮ ಭಾಷೆಯನ್ನು ಆರಿಸಿ.", welcome_title: "ಸ್ವಸ್ಥಕ್ಕೆ ಸ್ವಾಗತ", welcome_subtitle: "ಆರೋಗ್ಯ ಮತ್ತು સુખાકારીದಲ್ಲಿ ನಿಮ್ಮ ವಿಶ್ವಾಸಾರ್ಹ ಸಂಗಾತಿ.", login: "ಲಾಗಿನ್ ಮಾಡಿ", signup: "ಸೈನ್ ಅಪ್ ಮಾಡಿ", back: "ಹಿಂದೆ", login_email: "ಇಮೇಲ್‌ನೊಂದಿಗೆ ಮುಂದುವರಿಯಿರಿ", login_phone: "ಫೋನ್‌ನೊಂದಿಗೆ ಮುಂದುವರಿಯಿರಿ", login_digilocker: "ಡಿಜಿಲಾಕರ್‌ನೊಂದಿಗೆ ಮುಂದುವರಿಯಿರಿ", login_email_title: "ಇಮೇಲ್‌ನೊಂದಿಗೆ ಲಾಗಿನ್ ಮಾಡಿ", login_phone_title: "ಫೋನ್‌ನೊಂದಿಗೆ ಲಾಗಿన్ ಮಾಡಿ", get_otp: "OTP ಪಡೆಯಿರಿ", create_account: "ಖಾತೆ ತೆರೆಯಿರಿ", otp_sent: "ಒಂದು OTP ಕಳುಹಿಸಲಾಗಿದೆ.", essentials: "ಅಗತ್ಯಗಳು", book_appointment: "ಅಪಾಯಿಂಟ್ಮೆಂಟ್ ಬುಕ್ ಮಾಡಿ", connect_doctor: "ವೈದ್ಯರೊಂದಿಗೆ ಸಂಪರ್ಕಿಸಿ", medical_records: "ವೈದ್ಯಕೀಯ ದಾಖಲೆಗಳು", medicine_stock: "ಔಷಧ ಸ್ಟಾಕ್", health_tip_title: "ಇಂದಿನ ಆರೋಗ್ಯ ಸಲಹೆ", upcoming_appointments: "ಮುಂಬರುವ ಅಪಾಯಿಂಟ್ಮೆಂಟ್‌ಗಳು", home: "ಮುಖಪುಟ", appointments: "ಅಪಾಯಿಂಟ್ಮెంಟ್‌ಗಳು", records: "ದಾಖಲೆಗಳು", profile: "ಪ್ರೊಫೈಲ್", ai_doctor: "AI ವೈದ್ಯರು", notifications: "ಅಧಿಸೂಚನೆಗಳು", help_support: "ಸಹಾಯ ಮತ್ತು ಬೆಂಬಲ", logout: "ಲಾಗ್ ಔಟ್", good_morning: "ಶುಭೋದಯ", good_afternoon: "ಶುಭ ಮಧ್ಯಾಹ್ನ", good_evening: "ಶುಭ ಸಂಜೆ", good_night: "ಶುಭ ರಾತ್ರಿ" },
+            ml: { select_language_title: "നിങ്ങളുടെ ഭാഷ തിരഞ്ഞെടുക്കുക", select_language_subtitle: "അപ്ലിക്കേഷൻ അനുഭവത്തിനായി നിങ്ങളുടെ ഭാഷ തിരഞ്ഞെടുക്കുക.", welcome_title: "സ്വസ്ഥയിലേക്ക് സ്വാഗതം", welcome_subtitle: "ആരോഗ്യത്തിലും സൗഖ്യത്തിലും നിങ്ങളുടെ വിശ്വസ്ത പങ്കാളി.", login: "ലോഗിൻ ചെയ്യുക", signup: "സൈൻ അപ്പ് ചെയ്യുക", back: "പുറകോട്ട്", login_email: "ഇമെയിൽ ഉപയോഗിച്ച് തുടരുക", login_phone: "ഫോൺ ഉപയോഗിച്ച് തുടരുക", login_digilocker: "ഡിജിലോക്കർ ഉപയോഗിച്ച് തുടരുക", login_email_title: "ഇമെയിൽ ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യുക", login_phone_title: "ഫോൺ ഉപയോഗിച്ച് ലോഗിൻ ചെയ്യുക", get_otp: "OTP നേടുക", create_account: "അക്കൗണ്ട് ഉണ്ടാക്കുക", otp_sent: "ഒരു OTP അയച്ചിട്ടുണ്ട്.", essentials: "അത്യാവശ്യങ്ങൾ", book_appointment: "അപ്പോയിന്റ്മെന്റ് ബുക്ക് ചെയ്യുക", connect_doctor: "ഡോക്ടറുമായി ബന്ധപ്പെടുക", medical_records: "മെഡിക്കൽ റെക്കോർഡുകൾ", medicine_stock: "മരുന്ന് സ്റ്റോക്ക്", health_tip_title: "ഇന്നത്തെ ആരോഗ്യ നുറുങ്ങ്", upcoming_appointments: "വരാനിരിക്കുന്ന അപ്പോയിന്റ്മെന്റുകൾ", home: "ഹോം", appointments: "അപ്പോയിന്റ്മെന്റുകൾ", records: "റെക്കോർഡുകൾ", profile: "പ്രൊഫൈൽ", ai_doctor: "AI ഡോക്ടർ", notifications: "അറിയിപ്പുകൾ", help_support: "സഹായവും പിന്തുണയും", logout: "ലോഗ് ഔട്ട്", good_morning: "സുപ്രഭാതം", good_afternoon: "ശുഭ অপরাഹ്നം", good_evening: "ശുഭ സായാഹ്നം", good_night: "ശുഭ രാത്രി" },
+            pa: { select_language_title: "ਆਪਣੀ ਭਾਸ਼ਾ ਚੁਣੋ", select_language_subtitle: "ਐਪ ਅਨੁਭਵ ਲਈ ਆਪਣੀ ਭਾਸ਼ਾ ਚੁਣੋ।", welcome_title: "ਸਵਸਥ ਵਿੱਚ ਤੁਹਾਡਾ ਸੁਆਗਤ ਹੈ", welcome_subtitle: "ਸਿਹਤ ਅਤੇ ਤੰਦਰੁਸਤੀ ਵਿੱਚ ਤੁਹਾਡਾ ਭਰੋਸੇਯੋਗ ਸਾਥੀ।", login: "ਲਾਗਿਨ ਕਰੋ", signup: "ਸਾਈਨ ਅੱਪ ਕਰੋ", back: "ਪਿੱਛੇ", login_email: "ਈਮੇਲ ਨਾਲ ਜਾਰੀ ਰੱਖੋ", login_phone: "ਫੋਨ ਨਾਲ ਜਾਰੀ ਰੱਖੋ", login_digilocker: "ਡਿਜੀਲਾਕਰ ਨਾਲ ਜਾਰੀ ਰੱਖੋ", login_email_title: "ਈਮੇਲ ਨਾਲ ਲਾਗਿਨ ਕਰੋ", login_phone_title: "ਫੋਨ ਨਾਲ ਲਾਗਿਨ ਕਰੋ", get_otp: "OTP ਪ੍ਰਾਪਤ ਕਰੋ", create_account: "ਖਾਤਾ ਬਣਾਓ", otp_sent: "ਇੱਕ OTP ਭੇਜਿਆ ਗਿਆ ਹੈ।", essentials: "ਜ਼ਰੂਰੀ ਚੀਜ਼ਾਂ", book_appointment: "ਅਪਾਇੰਟਮੈਂਟ ਬੁੱਕ ਕਰੋ", connect_doctor: "ਡਾਕਟਰ ਨਾਲ ਜੁੜੋ", medical_records: "ਮੈਡੀਕਲ ਰਿਕਾਰਡ", medicine_stock: "ਦਵਾਈਆਂ ਦਾ ਸਟਾਕ", health_tip_title: "ਅੱਜ ਦਾ ਸਿਹਤ ਸੁਝਾਅ", upcoming_appointments: "ਆਉਣ ਵਾਲੀਆਂ ਅਪਾਇੰਟਮੈਂਟਾਂ", home: "ਮੁੱਖ ਪੰਨਾ", appointments: "ਅਪਾਇੰਟਮੈਂਟਾਂ", records: "ਰਿਕਾਰਡ", profile: "ਪ੍ਰੋਫਾਈਲ", ai_doctor: "AI ਡਾਕਟਰ", notifications: "ਸੂਚਨਾਵਾਂ", help_support: "ਮਦਦ ਅਤੇ ਸਹਾਇਤਾ", logout: "ਲੌਗ ਆਊਟ", good_morning: "ਸ਼ੁਭ ਸਵੇਰ", good_afternoon: "ਸ਼ੁਭ ਦੁਪਹਿਰ", good_evening: "ਸ਼ੁਭ ਸ਼ਾਮ", good_night: "ਸ਼ੁਭ ਰਾਤ" }
+        };
+        
+        const healthTips = [
+            { en: "Stay hydrated! Drinking enough water is crucial for energy levels and brain function.", hi: "हाइड्रेटेड रहें! ऊर्जा स्तर और मस्तिष्क के कार्य के लिए पर्याप्त पानी पीना महत्वपूर्ण ਹੈ।" }, { en: "Aim for at least 30 minutes of moderate physical activity every day.", hi: "हर दिन कम से कम 30 मिनट की मध्यम शारीरिक गतिविधि का लक्ष्य रखें।" }, { en: "Eat a variety of fruits and vegetables to get essential vitamins and minerals.", hi: "आवश्यक विटामिन और खनिज प्राप्त करने के लिए विभिन्न प्रकार के फल और सब्जियां खाएं।" }, { en: "Prioritize getting 7-9 hours of quality sleep per night for better health.", hi: "बेहतर स्वास्थ्य के लिए प्रति रात 7-9 घंटे की अच्छी नींद को प्राथमिकता दें।" }, { en: "Wash your hands frequently to prevent the spread of germs and illnesses.", hi: "कीटाणुओं और बीमारियों को फैलने से रोकने के लिए अपने हाथ बार-बार धोएं।" }, { en: "Practice mindfulness or meditation for a few minutes daily to reduce stress.", hi: "तनाव कम करने के लिए रोजाना कुछ मिनटों के लिए माइंडफुलनेस या ध्यान का अभ्यास करें।" }, { en: "Limit processed foods, sugary drinks, and unhealthy fats in your diet.", hi: "अपने आहार में प्रसंस्कृत खाद्य पदार्थ, मीठे पेय और अस्वास्थ्यकर वसा को सीमित करें।" }, { en: "Don't skip breakfast. It kickstarts your metabolism for the day.", hi: "नाश्ता न छोड़ें। यह आपके दिन के लिए मेटाबॉलिज्म को किकस्टार्ट करता है।" }, { en: "Take short breaks to stretch and move if you sit for long periods.", hi: "यदि आप लंबे समय तक बैठते हैं तो स्ट्रेच करने और हिलने-डुलने के लिए छोटे ब्रेक लें।" }, { en: "Connect with loved ones regularly to boost your mental and emotional well-being.", hi: "अपने मानसिक और भावनात्मक स्वास्थ्य को बढ़ावा देने के लिए प्रियजनों से नियमित रूप से जुड़ें।" }
+        ];
+
+        let currentLanguage = 'en';
+        let currentUser = { name: "User", email: "user@example.com" };
+        
+        // --- DATA ARRAYS ---
+        let appointments = [ { name: 'User', contact: '9876543210', doctor: 'Dr. Priya Singh', date: '2025-09-14', time: '10:30', status: 'Upcoming' }];
+        let doctors = [ { id: 1, name: 'Dr. Priya Singh', specialization: 'General Physician', phone: '919876543210', chatHistory: [{sender: 'doctor', text: 'Hello! How can I assist you today?'}]}, { id: 2, name: 'Dr. Amit Patel', specialization: 'Cardiologist', phone: '919123456789', chatHistory: []} ];
+        let medicalRecords = [ {id: 1, name: 'Blood Test Report', date: '2025-09-05', file: { name: 'blood_report.pdf'}, url: null}, {id: 2, name: 'X-Ray Scan', date: '2025-08-12', file: { name: 'chest_xray.jpg'}, url: null}];
+        let medicineStock = [ {id: 1, name: 'Paracetamol 500mg', quantity: '50 tablets', batchNo: 'AB123'}, {id: 2, name: 'Aspirin 75mg', quantity: '25 tablets', batchNo: 'CD456'}];
+
+        // --- STATE VARIABLES ---
+        let activeDoctorChat = {};
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-lang-key]').forEach(element => {
+                const key = element.getAttribute('data-lang-key');
+                if (translations[currentLanguage] && translations[currentLanguage][key]) {
+                    element.textContent = translations[currentLanguage][key];
+                } else if (translations['en'][key]) { // Fallback to English
+                    element.textContent = translations['en'][key];
+                }
+            });
+            updateGreeting();
+            updateHealthTip();
+        }
+        
+        const screens = document.querySelectorAll('.screen');
+        function showScreen(screenId) {
+            const bottomNav = document.querySelector('.bottom-nav');
+            const mainScreens = ['home-screen', 'appointments-screen', 'records-screen', 'profile-screen', 'ai-chat-screen', 'doctors-list-screen', 'medicine-stock-screen', 'search-results-screen'];
+            if (mainScreens.includes(screenId)) {
+                if(bottomNav) bottomNav.style.display = 'grid';
+            } else {
+                if(bottomNav) bottomNav.style.display = 'none';
+            }
+            screens.forEach(screen => {
+                if(!screen.id.includes('-modal')){ screen.classList.remove('active'); }
+            });
+            const activeScreen = document.getElementById(screenId);
+            if (activeScreen) { activeScreen.classList.add('active'); }
+        }
+
+        function openLanguageModal() { document.getElementById('language-modal').classList.add('active'); }
+        function closeLanguageModal() { document.getElementById('language-modal').classList.remove('active'); }
+        function selectLanguage(lang) {
+            localStorage.setItem('swasth_lang', lang); currentLanguage = lang; applyTranslations(); closeLanguageModal(); showScreen('login-choice-screen');
+        }
+        function logout() {
+            localStorage.clear(); window.location.reload();
+        }
+
+        const navItems = document.querySelectorAll('.nav-item');
+        function navigateTo(screenId, clickedElement) {
+            if (screenId === 'home-screen') { document.getElementById('home-search-input').value = ''; }
+            showScreen(screenId);
+            if (clickedElement && clickedElement.classList.contains('nav-item')) {
+                 navItems.forEach(item => { item.classList.remove('text-green-500'); item.classList.add('text-gray-500'); });
+                clickedElement.classList.remove('text-gray-500'); clickedElement.classList.add('text-green-500');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const splashScreen = document.getElementById('splash-screen');
+            const savedLang = localStorage.getItem('swasth_lang');
+            const loggedIn = localStorage.getItem('swasth_loggedIn');
+            splashScreen.classList.add('fade-out');
+            setTimeout(() => {
+                if (loggedIn) {
+                    currentLanguage = savedLang || 'en';
+                    currentUser.name = localStorage.getItem('swasth_userName') || "User";
+                    currentUser.email = localStorage.getItem('swasth_userEmail') || "user@example.com";
+                    applyTranslations(); initHomeScreen(); navigateTo('home-screen', document.querySelector('.nav-item'));
+                } else if (savedLang) {
+                    currentLanguage = savedLang; applyTranslations(); showScreen('login-choice-screen');
+                } else {
+                    showScreen('language-screen');
+                }
+            }, 2500);
+            
+            document.getElementById('email-login-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const emailInput = document.getElementById('login-email-input');
+                const email = emailInput.value;
+                const name = email.split('@')[0];
+                loginUser(name, email);
+            });
+            
+            document.getElementById('home-search-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const query = document.getElementById('home-search-input').value.trim();
+                if (query) {
+                    performSearch(query);
+                }
+            });
+            
+            document.getElementById('symptom-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                analyzeSymptoms();
+            });
+
+            renderAppointments(); renderDoctors(); renderMedicalRecords(); renderMedicineStock(); updateAppointmentDoctorList();
+        });
+
+        const signupForm = document.getElementById('signup-form');
+        const aadhaarInput = document.getElementById('aadhaar-no');
+        const otpSection = document.getElementById('otp-section');
+        const otpInput = document.getElementById('otp-input');
+        if(aadhaarInput) {
+            aadhaarInput.addEventListener('input', () => {
+                otpSection.classList.toggle('hidden', aadhaarInput.value.length !== 12);
+            });
+        }
+        if(signupForm) {
+            signupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const userName = document.getElementById('signup-name').value;
+                if (aadhaarInput.value.length === 12 && otpInput.value.length === 6 && userName) {
+                    loginUser(userName, "registered@swasth.com"); // Placeholder email for signup
+                } else { console.warn('Please fill all fields.'); }
+            });
+        }
+
+        function loginUser(name = "User", email = "user@example.com") {
+            localStorage.setItem('swasth_loggedIn', 'true');
+            localStorage.setItem('swasth_userName', name);
+            localStorage.setItem('swasth_userEmail', email);
+            currentUser.name = name;
+            currentUser.email = email;
+            initHomeScreen();
+            navigateTo('home-screen', document.querySelector('.nav-item[onclick*=\'home-screen\']'));
+        }
+        
+        function updateGreeting() {
+            const hour = new Date().getHours();
+            const greetingEl = document.getElementById('greeting');
+            if(!greetingEl) return;
+            let key;
+            if (hour >= 5 && hour < 12) { key = 'good_morning'; }
+            else if (hour >= 12 && hour < 17) { key = 'good_afternoon'; }
+            else if (hour >= 17 && hour < 21) { key = 'good_evening'; }
+            else { key = 'good_night'; }
+            let greeting = translations[currentLanguage]?.[key] || translations.en[key] || "Hello";
+            greetingEl.textContent = `${greeting}, ${currentUser.name}`;
+        }
+
+        function updateHealthTip() {
+            const tipContentEl = document.getElementById('health-tip-content'); if(!tipContentEl) return;
+            const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
+            const tipIndex = (dayOfYear - 1) % healthTips.length; const todayTip = healthTips[tipIndex];
+            tipContentEl.textContent = todayTip[currentLanguage] || todayTip.en;
+        }
+
+        function initHomeScreen() {
+            updateGreeting(); updateHealthTip(); getLocation(); renderAppointments();
+            document.getElementById('profile-user-name').textContent = currentUser.name;
+            document.getElementById('profile-user-email').textContent = currentUser.email;
+        }
+
+        function getLocation() {
+            const locationEl = document.getElementById('location'); if (!locationEl) return;
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition( p => { locationEl.textContent = `Greater Noida, UP`; }, e => { locationEl.textContent = 'Location access denied.'; });
+            } else { locationEl.textContent = 'Geolocation not supported.'; }
+        }
+        
+        // --- APPOINTMENT FUNCTIONS ---
+        function startSymptomChecker(){
+            document.getElementById('symptom-patient-name').value = currentUser.name;
+            showScreen('symptom-checker-screen');
+        }
+        
+        function analyzeSymptoms() {
+            showScreen('analysis-screen');
+            const symptoms = document.getElementById('symptoms-input').value.toLowerCase();
+            let specialty = 'General Physician'; // Default
+            if (symptoms.includes('heart') || symptoms.includes('chest pain') || symptoms.includes('pressure')) {
+                specialty = 'Cardiologist';
+            } else if (symptoms.includes('headache') || symptoms.includes('migraine') || symptoms.includes('nerve') || symptoms.includes('dizzy')) {
+                specialty = 'Neurologist';
+            }
+            setTimeout(() => {
+                showRecommendedDoctors(specialty);
+            }, 2000);
+        }
+
+        function showRecommendedDoctors(specialty) {
+            document.getElementById('recommendation-title').textContent = `Recommended: ${specialty}`;
+            const listEl = document.getElementById('recommended-doctors-list');
+            listEl.innerHTML = '';
+            const matchingDoctors = doctors.filter(doc => doc.specialization === specialty);
+            
+            if (matchingDoctors.length > 0) {
+                 matchingDoctors.forEach(doc => {
+                    const docEl = document.createElement('div');
+                    docEl.className = "bg-gray-50 p-3 rounded-lg flex items-center justify-between";
+                    docEl.innerHTML = `<div class="flex items-center flex-grow"><img src="https://placehold.co/48x48/10B981/FFFFFF?text=${doc.name.charAt(0)}" class="w-12 h-12 rounded-full mr-4"><div class="flex-grow"><h3 class="font-bold">${doc.name}</h3><p class="text-sm text-gray-600">${doc.specialization}</p></div></div><button onclick="openFinalAppointmentModal('${doc.name}')" class="bg-green-500 text-white text-sm font-semibold py-2 px-3 rounded-lg">Book</button>`;
+                    listEl.appendChild(docEl);
+                });
+            } else {
+                listEl.innerHTML = `<p class="text-gray-500 text-center mt-8">No doctors found for this specialty. Showing all doctors.</p>`;
+                 doctors.forEach(doc => {
+                    const docEl = document.createElement('div');
+                    docEl.className = "bg-gray-50 p-3 rounded-lg flex items-center justify-between";
+                    docEl.innerHTML = `<div class="flex items-center flex-grow"><img src="https://placehold.co/48x48/10B981/FFFFFF?text=${doc.name.charAt(0)}" class="w-12 h-12 rounded-full mr-4"><div class="flex-grow"><h3 class="font-bold">${doc.name}</h3><p class="text-sm text-gray-600">${doc.specialization}</p></div></div><button onclick="openFinalAppointmentModal('${doc.name}')" class="bg-green-500 text-white text-sm font-semibold py-2 px-3 rounded-lg">Book</button>`;
+                    listEl.appendChild(docEl);
+                });
+            }
+            lucide.createIcons();
+            showScreen('recommended-doctors-screen');
+        }
+
+        function openFinalAppointmentModal(doctorName) {
+            updateAppointmentDoctorList();
+            const doctorSelect = document.getElementById('doctor-name');
+            doctorSelect.value = doctorName;
+            document.getElementById('patient-name').value = currentUser.name;
+            document.getElementById('appointment-modal').classList.add('active');
+        }
+
+        function openAppointmentModal() { 
+            startSymptomChecker();
+        }
+        function closeAppointmentModal() { document.getElementById('appointment-modal').classList.remove('active'); document.getElementById('booking-form').reset(); }
+        
+        function submitAppointment() {
+            const name = document.getElementById('patient-name').value, 
+                  contact = document.getElementById('patient-contact').value,
+                  doctor = document.getElementById('doctor-name').value,
+                  dateValue = document.getElementById('appointment-date').value,
+                  timeValue = document.getElementById('appointment-time').value;
+
+            if (!name || !contact || !doctor || !dateValue || !timeValue) {
+                showBookingError("Please fill all fields before booking.");
+                return;
+            }
+
+            const appointmentDateTime = new Date(`${dateValue}T${timeValue}`);
+            const dayOfWeek = appointmentDateTime.getDay(); // Sunday = 0
+            const hour = appointmentDateTime.getHours();
+
+            if (dayOfWeek === 0) {
+                showBookingError("Sorry, appointments are not available on Sundays. Please choose another day.");
+                return;
+            }
+            if (hour < 10 || hour >= 22) {
+                showBookingError("Appointments are only available from 10:00 AM to 10:00 PM.");
+                return;
+            }
+
+            appointments.unshift({ name, contact, doctor, date: dateValue, time: timeValue, status: new Date(dateValue) >= new Date() ? 'Upcoming' : 'Completed' });
+            renderAppointments(); 
+            closeAppointmentModal();
+            navigateTo('appointments-screen', document.querySelector('.nav-item[onclick*=\'appointments-screen\']'));
+        }
+
+        function updateAppointmentDoctorList() {
+            const doctorSelect = document.getElementById('doctor-name');
+            if (!doctorSelect) return;
+            const firstOption = doctorSelect.options[0];
+            doctorSelect.innerHTML = '';
+            doctorSelect.appendChild(firstOption);
+            if (doctors.length === 0) {
+                firstOption.textContent = "No doctors available";
+            } else {
+                 firstOption.textContent = "Select Doctor";
+                doctors.forEach(doc => {
+                    const option = document.createElement('option');
+                    option.value = doc.name;
+                    option.textContent = `${doc.name} (${doc.specialization})`;
+                    doctorSelect.appendChild(option);
+                });
+            }
+        }
+
+
+        const deleteConfirmModal = document.getElementById('delete-confirm-modal'); const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+        const bookingErrorModal = document.getElementById('booking-error-modal');
+        function showDeleteConfirmation(index, type) {
+            confirmDeleteBtn.dataset.deleteIndex = index; confirmDeleteBtn.dataset.deleteType = type;
+            document.getElementById('delete-confirm-text').textContent = `Are you sure you want to delete this ${type}?`;
+            deleteConfirmModal.classList.add('active');
+        }
+        function hideDeleteConfirmation() { deleteConfirmModal.classList.remove('active'); }
+        function showBookingError(message) {
+            document.getElementById('booking-error-text').textContent = message;
+            bookingErrorModal.classList.add('active');
+        }
+        function hideBookingError() { bookingErrorModal.classList.remove('active'); }
+
+        function confirmDeletion() {
+            const index = parseInt(confirmDeleteBtn.dataset.deleteIndex); const type = confirmDeleteBtn.dataset.deleteType;
+            if (type === 'appointment') { appointments.splice(index, 1); renderAppointments(); }
+            else if (type === 'doctor') { doctors.splice(index, 1); renderDoctors(); updateAppointmentDoctorList(); }
+            else if (type === 'record') { medicalRecords.splice(index, 1); renderMedicalRecords(); }
+            else if (type === 'medicine') { medicineStock.splice(index, 1); renderMedicineStock(); }
+            hideDeleteConfirmation();
+        }
+
+        function renderAppointments() {
+            const upcomingList = document.getElementById('upcoming-appointments-list'); const allAppointmentsList = document.getElementById('appointments-list');
+            if (!upcomingList || !allAppointmentsList) return;
+            appointments.sort((a, b) => new Date(b.date + 'T' + b.time) - new Date(a.date + 'T' + a.time));
+            upcomingList.innerHTML = ''; allAppointmentsList.innerHTML = '';
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const upcomingAppointments = appointments.map((apt, index) => ({ ...apt, originalIndex: index })).filter(apt => new Date(apt.date) >= today);
+            if (upcomingAppointments.length > 0) {
+                 upcomingAppointments.forEach(apt => {
+                    const aptEl = document.createElement('div'); aptEl.className = "border-b pb-2 last:border-b-0 flex justify-between items-center";
+                    aptEl.innerHTML = `<div><p class="font-semibold">${apt.doctor}</p><p class="text-sm text-gray-500">${new Date(apt.date).toDateString()}, ${apt.time}</p></div><button onclick="showDeleteConfirmation(${apt.originalIndex}, 'appointment')" class="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-100 transition-colors"><i data-lucide="trash-2" class="w-4 h-4"></i></button>`;
+                    upcomingList.appendChild(aptEl);
+                });
+            } else { upcomingList.innerHTML = '<p class="text-gray-400">No upcoming appointments.</p>'; }
+            if (appointments.length > 0) {
+                appointments.forEach((apt, index) => {
+                    const isUpcoming = new Date(apt.date) >= today; const statusColor = isUpcoming ? 'text-green-600' : 'text-gray-400';
+                    const aptCard = document.createElement('div'); aptCard.className = "bg-gray-50 p-4 rounded-xl flex justify-between items-start";
+                    aptCard.innerHTML = `<div><h3 class="font-bold">${apt.doctor}</h3><p class="text-sm text-gray-600">Patient: ${apt.name}</p><p class="text-sm text-gray-600">Date: ${new Date(apt.date).toDateString()} at ${apt.time}</p><p class="text-sm font-medium ${statusColor}">${isUpcoming ? `Upcoming` : `Completed`}</p></div><button onclick="showDeleteConfirmation(${index}, 'appointment')" class="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-100 transition-colors"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`;
+                    allAppointmentsList.appendChild(aptCard);
+                });
+            } else { allAppointmentsList.innerHTML = '<p class="text-gray-400 text-center mt-8">No appointments found.</p>'; }
+            lucide.createIcons();
+        }
+        
+        // --- DOCTOR & CHAT FUNCTIONS ---
+        function openDoctorsList() { renderDoctors(); showScreen('doctors-list-screen'); }
+        function openAddDoctorModal() { document.getElementById('add-doctor-modal').classList.add('active'); }
+        function closeAddDoctorModal() { document.getElementById('add-doctor-modal').classList.remove('active'); document.getElementById('add-doctor-form').reset(); }
+        function submitNewDoctor() {
+            const name = document.getElementById('new-doctor-name').value; 
+            const spec = document.getElementById('new-doctor-spec').value;
+            const phone = document.getElementById('new-doctor-phone').value;
+            if (name && spec && phone) {
+                doctors.push({ id: Date.now(), name, specialization: spec, phone, chatHistory: [] });
+                renderDoctors();
+                updateAppointmentDoctorList();
+                closeAddDoctorModal();
+            }
+        }
+        function renderDoctors() {
+            const listEl = document.getElementById('doctors-list'); if (!listEl) return; listEl.innerHTML = '';
+            if (doctors.length > 0) {
+                doctors.forEach((doc, index) => {
+                    const docEl = document.createElement('div'); docEl.className = "bg-gray-50 p-3 rounded-lg flex items-center justify-between";
+                    docEl.innerHTML = `<div class="flex items-center cursor-pointer flex-grow" onclick="openDoctorChat(${doc.id})"><img src="https://placehold.co/48x48/10B981/FFFFFF?text=${doc.name.charAt(0)}" class="w-12 h-12 rounded-full mr-4"><div class="flex-grow"><h3 class="font-bold">${doc.name}</h3><p class="text-sm text-gray-600">${doc.specialization}</p></div></div><button onclick="showDeleteConfirmation(${index}, 'doctor')" class="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-100 transition-colors"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`;
+                    listEl.appendChild(docEl);
+                });
+            } else { listEl.innerHTML = `<p class="text-gray-400 text-center mt-8">No doctors added yet.</p>`; }
+            lucide.createIcons();
+        }
+        
+        function openDoctorChat(doctorId) {
+            const doctor = doctors.find(d => d.id === doctorId); if (!doctor) return;
+            activeDoctorChat = doctor;
+            document.getElementById('confirm-whatsapp-btn').onclick = () => {
+                contactDoctorOnWhatsApp(doctorId, 'chat');
+            };
+            document.getElementById('whatsapp-confirm-text').textContent = `Continue to chat with ${doctor.name} on WhatsApp?`;
+            document.getElementById('whatsapp-confirm-modal').classList.add('active');
+        }
+
+        function startWhatsAppCall(type, doctorId) {
+            const doctor = doctors.find(d => d.id === doctorId);
+            if(doctor && doctor.phone){
+                document.getElementById('confirm-whatsapp-btn').onclick = () => {
+                     window.open(`https://wa.me/${doctor.phone}`, '_blank');
+                     hideWhatsAppConfirmation();
+                };
+                document.getElementById('whatsapp-confirm-text').textContent = `Continue to ${type} call ${doctor.name} on WhatsApp?`;
+                document.getElementById('whatsapp-confirm-modal').classList.add('active');
+            }
+        }
+        
+        function contactDoctorOnWhatsApp(doctorId, type) {
+            const doctor = doctors.find(d => d.id === doctorId);
+            if (doctor && doctor.phone) {
+                let url = `https://wa.me/${doctor.phone}`;
+                if (type === 'chat') {
+                    const text = document.getElementById('doctor-chat-input')?.value.trim();
+                    if(text) url += `?text=${encodeURIComponent(text)}`;
+                }
+                window.open(url, '_blank');
+                hideWhatsAppConfirmation();
+            } else {
+                alert("Doctor's contact number is not available.");
+            }
+        }
+        
+        function hideWhatsAppConfirmation() {
+            document.getElementById('whatsapp-confirm-modal').classList.remove('active');
+        }
+        
+        // --- MEDICAL RECORDS FUNCTIONS ---
+        function openAddDocumentModal() { document.getElementById('add-document-modal').classList.add('active'); }
+        function closeAddDocumentModal() { document.getElementById('add-document-modal').classList.remove('active'); document.getElementById('add-document-form').reset(); }
+        function submitNewDocument() {
+            const nameInput = document.getElementById('new-document-name');
+            const fileInput = document.getElementById('new-document-file');
+            if (nameInput.value && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const newRecord = {
+                    id: Date.now(),
+                    name: nameInput.value,
+                    date: new Date().toISOString().split('T')[0], // Today's date
+                    file: file,
+                    url: URL.createObjectURL(file) // Create a temporary URL to view the file
+                };
+                medicalRecords.unshift(newRecord);
+                renderMedicalRecords();
+                closeAddDocumentModal();
+            }
+        }
+        function renderMedicalRecords() {
+            const listEl = document.getElementById('records-list'); if(!listEl) return; listEl.innerHTML = '';
+            if (medicalRecords.length > 0) {
+                medicalRecords.forEach((rec, index) => {
+                    const recEl = document.createElement('div');
+                    recEl.className = "bg-gray-50 p-3 rounded-lg flex items-center justify-between";
+                    recEl.innerHTML = `
+                        <div class="flex items-center flex-grow cursor-pointer" onclick="viewRecord(${index})">
+                            <i data-lucide="file-text" class="w-10 h-10 text-purple-500 mr-4"></i>
+                            <div class="flex-grow">
+                                <h3 class="font-bold">${rec.name}</h3>
+                                <p class="text-sm text-gray-600">Added: ${rec.date}</p>
+                            </div>
+                        </div>
+                        <button onclick="showDeleteConfirmation(${index}, 'record')" class="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-100 transition-colors">
+                            <i data-lucide="trash-2" class="w-5 h-5"></i>
+                        </button>`;
+                    listEl.appendChild(recEl);
+                });
+            } else {
+                listEl.innerHTML = `<p class="text-gray-400 text-center mt-8">No medical records added yet.</p>`;
+            }
+            lucide.createIcons();
+        }
+        
+        function viewRecord(index) {
+            const record = medicalRecords[index];
+            if (!record || !record.url) return;
+            const viewerContent = document.getElementById('file-viewer-content');
+            const viewerTitle = document.getElementById('file-viewer-title');
+            viewerTitle.textContent = record.name;
+            viewerContent.innerHTML = ''; 
+            if (record.file.type.startsWith('image/')) {
+                viewerContent.innerHTML = `<img src="${record.url}" alt="${record.name}" class="max-w-full max-h-full object-contain">`;
+            } else if (record.file.type === 'application/pdf') {
+                viewerContent.innerHTML = `<iframe src="${record.url}" class="w-full h-full border-none"></iframe>`;
+            } else {
+                viewerContent.innerHTML = `
+                    <div class="text-center p-8">
+                        <p class="text-lg text-gray-700">Preview not available for this file type.</p>
+                        <p class="text-sm text-gray-500 mb-4">${record.file.name}</p>
+                        <a href="${record.url}" download="${record.file.name}" class="bg-green-500 text-white font-semibold py-2 px-4 rounded-lg">Download File</a>
+                    </div>`;
+            }
+            showScreen('file-viewer-screen');
+        }
+
+
+        // --- MEDICINE STOCK FUNCTIONS ---
+        function openAddMedicineModal() { document.getElementById('add-medicine-modal').classList.add('active'); }
+        function closeAddMedicineModal() { document.getElementById('add-medicine-modal').classList.remove('active'); document.getElementById('add-medicine-form').reset(); }
+        function submitNewMedicine() {
+            const name = document.getElementById('new-medicine-name').value;
+            const qty = document.getElementById('new-medicine-qty').value;
+            const batch = document.getElementById('new-medicine-batch').value;
+            if (name && qty && batch) {
+                medicineStock.unshift({ id: Date.now(), name, quantity: qty, batchNo: batch });
+                renderMedicineStock();
+                closeAddMedicineModal();
+            }
+        }
+        function renderMedicineStock() {
+            const listEl = document.getElementById('medicine-list'); if(!listEl) return; listEl.innerHTML = '';
+            if (medicineStock.length > 0) {
+                medicineStock.forEach((med, index) => {
+                    const medEl = document.createElement('div'); medEl.className = "bg-gray-50 p-3 rounded-lg flex items-center justify-between";
+                    medEl.innerHTML = `<div class="flex items-center flex-grow"><i data-lucide="pilcrow" class="w-10 h-10 text-yellow-500 mr-4"></i><div class="flex-grow"><h3 class="font-bold">${med.name}</h3><p class="text-sm text-gray-600">Qty: ${med.quantity} | Batch: ${med.batchNo}</p></div></div><button onclick="showDeleteConfirmation(${index}, 'medicine')" class="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-100 transition-colors"><i data-lucide="trash-2" class="w-5 h-5"></i></button>`;
+                    listEl.appendChild(medEl);
+                });
+            } else {
+                listEl.innerHTML = `<p class="text-gray-400 text-center mt-8">No medicines added to stock yet.</p>`;
+            }
+            lucide.createIcons();
+        }
+        
+        // --- SEARCH FUNCTIONS ---
+        function performSearch(query) {
+            const resultsList = document.getElementById('search-results-list');
+            resultsList.innerHTML = '';
+            const lowerQuery = query.toLowerCase();
+            let resultsFound = false;
+
+            // Search Doctors
+            const foundDoctors = doctors.filter(doc => doc.name.toLowerCase().includes(lowerQuery) || doc.specialization.toLowerCase().includes(lowerQuery));
+            if (foundDoctors.length > 0) {
+                resultsFound = true;
+                let doctorsHtml = '<h3 class="text-lg font-bold text-gray-700 mb-2">Doctors</h3>';
+                foundDoctors.forEach(doc => {
+                    doctorsHtml += `<div class="bg-gray-50 p-3 rounded-lg cursor-pointer" onclick="contactDoctorOnWhatsApp(${doc.id})"><p class="font-semibold">${doc.name}</p><p class="text-sm text-gray-500">${doc.specialization}</p></div>`;
+                });
+                resultsList.innerHTML += doctorsHtml;
+            }
+
+            // Search Appointments
+            const foundAppointments = appointments.filter(apt => apt.doctor.toLowerCase().includes(lowerQuery) || apt.name.toLowerCase().includes(lowerQuery));
+            if (foundAppointments.length > 0) {
+                resultsFound = true;
+                let appointmentsHtml = '<h3 class="text-lg font-bold text-gray-700 mt-4 mb-2">Appointments</h3>';
+                foundAppointments.forEach(apt => {
+                    appointmentsHtml += `<div class="bg-gray-50 p-3 rounded-lg"><p class="font-semibold">${apt.doctor}</p><p class="text-sm text-gray-500">For ${apt.name} on ${apt.date}</p></div>`;
+                });
+                resultsList.innerHTML += appointmentsHtml;
+            }
+            
+            // Search Records
+            const foundRecords = medicalRecords.filter(rec => rec.name.toLowerCase().includes(lowerQuery));
+            if (foundRecords.length > 0) {
+                 resultsFound = true;
+                let recordsHtml = '<h3 class="text-lg font-bold text-gray-700 mt-4 mb-2">Medical Records</h3>';
+                foundRecords.forEach(rec => {
+                     recordsHtml += `<div class="bg-gray-50 p-3 rounded-lg"><p class="font-semibold">${rec.name}</p><p class="text-sm text-gray-500">Added on ${rec.date}</p></div>`;
+                });
+                resultsList.innerHTML += recordsHtml;
+            }
+            
+            // Search Medicine
+            const foundMeds = medicineStock.filter(med => med.name.toLowerCase().includes(lowerQuery));
+            if (foundMeds.length > 0) {
+                resultsFound = true;
+                let medsHtml = '<h3 class="text-lg font-bold text-gray-700 mt-4 mb-2">Medicine Stock</h3>';
+                foundMeds.forEach(med => {
+                    medsHtml += `<div class="bg-gray-50 p-3 rounded-lg"><p class="font-semibold">${med.name}</p><p class="text-sm text-gray-500">Qty: ${med.quantity}</p></div>`;
+                });
+                resultsList.innerHTML += medsHtml;
+            }
+
+            if (!resultsFound) {
+                resultsList.innerHTML = `<p class="text-gray-500 text-center mt-8">No results found for "${query}"</p>`;
+            }
+            lucide.createIcons();
+            showScreen('search-results-screen');
+        }
+
+
+        // --- AI CHATBOT FUNCTIONS ---
+        const chatForm = document.getElementById('chat-form'); const chatInput = document.getElementById('chat-input'); const chatHistory = document.getElementById('chat-history');
+        chatForm.addEventListener('submit', (e) => {
+            e.preventDefault(); const userMessage = chatInput.value.trim();
+            if (userMessage) { addUserMessage(userMessage); chatInput.value = ''; getAIResponse(userMessage); }
+        });
+        function addUserMessage(message) {
+            const messageElement = document.createElement('div'); messageElement.className = 'flex justify-end mb-4';
+            messageElement.innerHTML = `<div class="bg-green-500 text-white p-3 rounded-lg max-w-xs"><p class="text-sm">${message}</p></div>`;
+            chatHistory.appendChild(messageElement); chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        function addBotMessage(message) {
+            const messageElement = document.createElement('div'); messageElement.className = 'flex justify-start mb-4';
+            messageElement.innerHTML = `<div class="bg-green-100 p-3 rounded-lg max-w-xs"><p class="text-sm">${message}</p></div>`;
+            chatHistory.appendChild(messageElement); chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        function showTypingIndicator() {
+            const typingElement = document.createElement('div'); typingElement.id = 'typing-indicator'; typingElement.className = 'flex justify-start mb-4';
+            typingElement.innerHTML = `<div class="bg-gray-200 p-3 rounded-lg"><div class="typing-indicator"><span></span><span></span><span></span></div></div>`;
+            chatHistory.appendChild(typingElement); chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        function hideTypingIndicator() {
+            const indicator = document.getElementById('typing-indicator'); if (indicator) { indicator.remove(); }
+        }
+        async function getAIResponse(userQuery) {
+            showTypingIndicator();
+            const apiKey = "AIzaSyDmBYyC0vPZUUdQbAS9PtLO4WLzzMx8dYQ"; 
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            const payload = { 
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: {
+                    parts: [{ text: "You are a helpful and friendly medical AI assistant for an app called Swasth. Provide clear, concise, and safe health-related information. Always advise users to consult a real doctor for serious issues. Use simple language." }]
+                }
+            };
+            try {
+                const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                if (!response.ok) { throw new Error(`API error: ${response.status} ${response.statusText}`); }
+                const result = await response.json(); const candidate = result.candidates?.[0];
+                hideTypingIndicator();
+                if (candidate && candidate.content?.parts?.[0]?.text) { addBotMessage(candidate.content.parts[0].text); } 
+                else { addBotMessage("I'm sorry, I couldn't find an answer for that. Please try asking differently."); }
+            } catch (error) {
+                hideTypingIndicator();
+                console.error("Error fetching AI response:", error);
+                addBotMessage("Sorry, I'm having trouble connecting to the AI service right now. Please try again later.");
+            }
+        }
+        const offlineBanner = document.getElementById('offline-banner');
+        window.addEventListener('online', () => offlineBanner.style.display = 'none');
+        window.addEventListener('offline', () => offlineBanner.style.display = 'block');
+    </script>
+</body>
+</html>
+
